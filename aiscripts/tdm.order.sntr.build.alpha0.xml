@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<aiscript name="tdm.order.sntr.build.alpha0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="aiscripts.xsd" version="0">
+  <order id="TDM_Order_SnTR_Build" name="SnTR Build (Alpha 0)" description="{1041, 162}" category="trade" infinite="true">
+    <params>
+      <param name="ware" required="true" type="ware" text="{1041, 10145}" comment="Ware to trade. What do we want to trade?">
+        <input_param name="cancarry" value="this.ship"/>
+      </param>
+      <param name="maxamount" required="false" default="this.ship.cargo.capacity.all" type="number" advanced="false" text="{1041, 10051}" comment="Max amount.">
+        <input_param name="startvalue" value="this.ship.cargo.{$ware}.max"/>
+        <input_param name="min" value="0"/>
+        <input_param name="max" value="this.ship.cargo.{$ware}.max"/>
+        <input_param name="step" value="1"/>
+      </param>
+      <param name="minamount" required="false" default="this.ship.cargo.{$ware}.max / 10" type="number" advanced="false" text="{1041, 10065}" comment="Min amount.">
+        <input_param name="startvalue" value="this.ship.cargo.{$ware}.max / 10"/>
+        <input_param name="min" value="1"/>
+        <input_param name="max" value="this.ship.cargo.{$ware}.max"/> 
+        <input_param name="step" value="1"/>
+      </param>
+      <param name="maxbuyprice" required="false" default="($ware.averageprice / 1Cr)Cr" type="money" text="Max buy price" comment="Min/Max price. At which price is a trade acceptable?">
+        <input_param name="startvalue" value="($ware.averageprice / 1Cr)Cr"/>
+        <input_param name="min" value="($ware.minprice / 1Cr)Cr"/>
+        <input_param name="max" value="($ware.maxprice / 1Cr)Cr"/>
+        <input_param name="step" value="1Cr"/>
+      </param>
+      <param name="minsellprice" required="false" default="($ware.averageprice / 1Cr)Cr" type="money" text="Min sell price" comment="Min/Max price. At which price is a trade acceptable?">
+        <input_param name="startvalue" value="($ware.averageprice / 1Cr)Cr"/>
+        <input_param name="min" value="($ware.minprice / 1Cr)Cr"/>
+        <input_param name="max" value="($ware.maxprice / 1Cr)Cr"/>
+        <input_param name="step" value="1Cr"/>
+      </param>
+      <param name="numVendors" required="false" type="number" default="0" text="Enable vendors" comment="Number of vendors the trader buys from.">
+        <input_param name="startvalue" value="1 + ( 2 * @this.ship.pilot.skill.management + @this.ship.pilot.skill.morale ) / 5"/>
+        <input_param name="min" value="0"/>
+        <input_param name="max" value="1 + ( 2 * @this.ship.pilot.skill.management + @this.ship.pilot.skill.morale ) / 5"/>
+        <input_param name="step" value="1"/>
+      </param>
+      <param name="vendor1" required="false" default="null" type="object" text="Vendor 1" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor2" required="false" default="null" type="object" text="Vendor 2" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor3" required="false" default="null" type="object" text="Vendor 3" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor4" required="false" default="null" type="object" text="Vendor 4" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor5" required="false" default="null" type="object" text="Vendor 5" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor6" required="false" default="null" type="object" text="Vendor 6" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor7" required="false" default="null" type="object" text="Vendor 7" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor8" required="false" default="null" type="object" text="Vendor 8" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor9" required="false" default="null" type="object" text="Vendor 9" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor10" required="false" default="null" type="object" text="Vendor 10" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="numBuildsites" required="false" type="number" default="0" text="Enable build sites" comment="Number of customers the trader buys from.">
+        <input_param name="startvalue" value="1 + ( 2 * @this.ship.pilot.skill.management + @this.ship.pilot.skill.piloting ) / 5"/>
+        <input_param name="min" value="0"/>
+        <input_param name="max" value="1 + ( 2 * @this.ship.pilot.skill.management + @this.ship.pilot.skill.piloting ) / 5"/>
+        <input_param name="step" value="1"/>
+      </param>
+      <param name="buildsite1" required="false" default="null" type="object" text="Build site 1" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="buildsite2" required="false" default="null" type="object" text="Build site 2" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="buildsite3" required="false" default="null" type="object" text="Build site 3" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="buildsite4" required="false" default="null" type="object" text="Build site 4" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="buildsite5" required="false" default="null" type="object" text="Build site 5" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="buildsite6" required="false" default="null" type="object" text="Build site 6" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="buildsite7" required="false" default="null" type="object" text="Build site 7" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="buildsite8" required="false" default="null" type="object" text="Build site 8" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="buildsite9" required="false" default="null" type="object" text="Build site 9" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="buildsite10" required="false" default="null" type="object" text="Build site 10" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      
+    </params>
+    <skill min="20"/>
+    <requires>
+      <match shiptype="shiptype.lasertower" negate="true"/>
+    </requires>
+  </order>
+  <interrupts>
+    <handler ref="SectorChangeHandler"/>
+    <handler ref="AttackHandler" />
+    <handler ref="MissileLockHandler" />
+    <handler ref="ScannedHandler" />
+    <handler ref="InspectedHandler"/>
+    <handler ref="FoundAbandonedHandler"/>
+    <handler ref="ResupplyHandler" />
+    <handler ref="JobRemoveRequestHandler" />
+    <handler ref="TargetInvalidHandler"/>
+  </interrupts>
+  <init>
+    <set_order_syncpoint_reached order="this.ship.order"/>
+    <do_if value="this.ship.commander">
+      <set_command command="command.trade" param="this.ship.commander" />
+    </do_if>
+    <do_else>
+      <set_command command="command.freetrade" />
+    </do_else>
+
+    <do_if value="this.assignedcontrolled.hasownaccount and not this.assignedcontrolled.tradeorders.count">
+      <remove_object_account object="this.assignedcontrolled" transfer="true"/>
+    </do_if>
+
+    <!-- Main action for waiting times -->
+    <set_command_action commandaction="commandaction.searchingtrades" />
+  </init>
+  <attention min="unknown">
+    <actions>
+
+      <!-- set up initial state for trade runs -->
+      <label name="start" />
+
+      <set_value name="$logfile" exact="player.systemtime.{'%Y-%m-%d_%H'} + '_SnTR_Build_' + this.ship.idcode"/>
+      
+      <set_value name="$vendors" exact="[$vendor1, $vendor2, $vendor3, $vendor4, $vendor5, $vendor6, $vendor7, $vendor8, $vendor9, $vendor10]"/>
+      <set_value name="$buildsites" exact="[$buildsite1, $buildsite2, $buildsite3, $buildsite4, $buildsite5, $buildsite6, $buildsite7, $buildsite8, $buildsite9, $buildsite10]"/>
+      <resize_list list="$vendors" count="$numVendors"/>
+      <resize_list list="$buildsites" count="$numBuildsites"/>
+
+      <debug_to_file name="$logfile" directory="'TDM'" text="'------------------------------------------------'" output="false" append="true" />
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2 (%3)'.['ship name', this.ship.knownname, this.ship.idcode]" output="false" append="true" />  
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2 (%3)'.['has own account', this.assignedcontrolled.hasownaccount, this.assignedcontrolled.money]" output="false" append="true" />  
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['ware', $ware.name]" output="false" append="true" /> 
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['min amount', $minamount]" output="false" append="true" />    
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['max amount', $maxamount]" output="false" append="true" />
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['max buy price', $maxbuyprice]" output="false" append="true" />    
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['min sell price', $minsellprice]" output="false" append="true" />    
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['enabled vendors', $numVendors]" output="false" append="true" />
+      <do_all exact="$vendors.count" counter="$i">
+        <do_if value="$vendors.{$i} != null">
+          <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 %2: %3 (%4)'.['vendor', $i, $vendors.{$i}.knownname, $vendors.{$i}.sector.knownname]" output="false" append="true" />  
+        </do_if>
+      </do_all>
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['enabled customers', $numBuildsites]" output="false" append="true" />
+      <do_all exact="$buildsites.count" counter="$i">
+        <do_if value="$buildsites.{$i} != null">
+          <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 %2: %3 (%4)'.['customer', $i, $buildsites.{$i}.knownname, $buildsites.{$i}.sector.knownname]" output="false" append="true" />  
+        </do_if>
+      </do_all>
+
+      <!-- Idle for a while -->
+      <set_value name="$maxidletime" exact="(70 - 4 * this.ship.pilot.skill.morale)s"/>
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['max idletime', $maxidletime]" output="false" append="true" /> 
+      <run_script name="'move.idle'" >
+        <param name="Min" value="5s" />
+        <param name="Max" value="$maxidletime" />
+      </run_script>
+      
+
+      <!-- loop -->
+      <label name="find trade run"/>
+
+      <!-- Idle for a while -->
+      <run_script name="'move.idle'" >
+        <param name="Min" value="5s" />
+        <param name="Max" value="$maxidletime" />
+      </run_script>
+
+      <!-- Initializate the results -->
+      <set_value name="$buyoffer" exact="null" />
+      <set_value name="$selloffer" exact="null" />
+
+      <set_value name="$wares" exact="[$ware]"/>
+
+      <debug_to_file name="$logfile" directory="'TDM'" text="'------------------------------------------------'" output="false" append="true" />
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': cargo : %1 units of %2'.[this.ship.cargo.{$ware}.count, $ware.name]" output="false" append="true" /> 
+      <!-- if we have a sufficent amount in cargo then try to sell, otherwise buy -->
+      <!-- we want that one missing energy cell delivered: ignore minamount if we can completely fill an offer -->
+      <do_if value="this.ship.cargo.{$ware}.count ge 0">
+        <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': looking for buy offers at buildstorages'" output="false" append="true" /> 
+        <set_value name="$maxprofit" exact="0"/>
+        <set_value name="$complete" exact="false" comment="have we found an offer we can completely fill"/>
+        <do_all exact="$buildsites.count" counter="$i">
+          <wait min="50ms" max="100ms" comment="Avoid performance peaks with find functions"/>
+          <find_buy_offer tradepartner="this.ship" buyer="$buildsites.{$i}.buildstorage" result="$buyoffers" wares="$wares" multiple="true">
+            <match_buyer>
+              <match tradesknownto="this.owner"/>
+              <!-- don't find (supply) offers on ships -->
+              <match class="class.ship" negate="true" />
+            </match_buyer>
+            <!-- <amount min="$minamount"/> -->
+            <price min="$minsellprice"/>
+          </find_buy_offer>
+          <do_all exact="$buyoffers.count" counter="$j">
+            <!-- copied from SnTR Trade:
+            <set_value name="$profit" exact="$buyoffers.{$j}.unitprice * [$buyoffers.{$j}.amount, this.ship.cargo.{$ware}.count, $maxamount].min"/>
+            <do_if value="$profit gt $maxprofit">
+              <set_value name="$maxprofit" exact="$profit"/>
+              <set_value name="$buyoffer" exact="$buyoffers.{$j}"/>
+            </do_if>
+            -->
+            <do_if value="$buyoffers.{$j}.amount le this.ship.cargo.{$ware}.count">
+              <!-- complete offers take priority -->
+              <!-- we serve the largest (scaled by price) first, there is a good chance we have cargo left over to complete another small one -->
+              <do_if value="not $complete">
+                <set_value name="$maxprofit" exact="0"/>
+                <set_value name="$complete" exact="true"/>
+              </do_if>
+              <set_value name="$profit" exact="$buyoffers.{$j}.unitprice * $buyoffers.{$j}.amount"/>
+              <do_if value="$profit gt $maxprofit">
+                <set_value name="$maxprofit" exact="$profit"/>
+                <set_value name="$buyoffer" exact="$buyoffers.{$j}"/>
+              </do_if>
+            </do_if>
+            <do_elseif value="(not $complete) and (this.ship.cargo.{$ware}.count ge $minamount )">
+              <set_value name="$profit" exact="$buyoffers.{$j}.unitprice * $buyoffers.{$j}.amount"/>
+              <do_if value="$profit gt $maxprofit">
+                <set_value name="$maxprofit" exact="$profit"/>
+                <set_value name="$buyoffer" exact="$buyoffers.{$j}"/>
+              </do_if>
+            </do_elseif>
+          </do_all>
+        </do_all>
+        <do_if value="$maxprofit gt 0">
+          <!-- <clamp_trade_amount result="$sellamount" trade="$buyoffer" amount="$maxamount" seller="this.ship" buyer="$buyoffer.owner"/> -->
+          <clamp_trade_amount result="$sellamount" trade="$buyoffer" seller="this.ship" buyer="$buyoffer.owner"/>
+          <do_if value="$sellamount gt 0">
+            <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': supplying %1 units for %2 to %3 - %4 (%5)'.[$sellamount, $buyoffer.unitprice, $buyoffer.owner.base.knownname, $buyoffer.owner.knownname, $buyoffer.owner.sector.knownname]" output="false" append="true" />  
+            <create_trade_order object="this.object" tradeoffer="$buyoffer" amount="$sellamount"/>
+          </do_if>
+        </do_if>
+      </do_if>
+
+      <!-- try to buy somewhere -->
+      <!-- <do_if value="this.ship.cargo.{$ware}.free gt $minamount"> -->
+      <do_if value="[$maxamount - this.ship.cargo.{$ware}.count, this.ship.cargo.{$ware}.free].min ge $minamount">
+        <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': trying to buy'" output="false" append="true" />
+        <set_value name="$maxprofit" exact="0"/>
+        <do_all exact="$vendors.count" counter="$i">
+          <wait min="50ms" max="100ms" comment="Avoid performance peaks with find functions"/>
+          <find_sell_offer tradepartner="this.ship" seller="$vendors.{$i}" result="$selloffers" wares="$wares" multiple="true">
+            <match_seller>
+              <match tradesknownto="this.owner"/>
+            </match_seller>
+            <amount min="$minamount"/>
+            <price max="$maxbuyprice"/>
+          </find_sell_offer>
+          <do_all exact="$selloffers.count" counter="$j">
+            <!-- the price difference might be zero => add one cent to prevent an acceptable trade to have zero profit -->
+            <set_value name="$profit" exact="( 1 + $maxbuyprice - $selloffers.{$j}.unitprice ) * [$selloffers.{$j}.amount, this.ship.cargo.{$ware}.free, $maxamount - this.ship.cargo.{$ware}.count].min"/>
+            <do_if value="$profit gt $maxprofit">
+              <set_value name="$maxprofit" exact="$profit"/>
+              <set_value name="$selloffer" exact="$selloffers.{$j}"/>
+            </do_if>
+          </do_all>
+        </do_all>
+        <do_if value="$maxprofit gt 0">
+          <clamp_trade_amount result="$buyamount" trade="$selloffer" amount="$maxamount - this.ship.cargo.{$ware}.count" buyer="this.ship" seller="$selloffer.owner"/>
+          <do_if value="$buyamount gt 0">
+            <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': buing %1 units for %2 from %3(%4)'.[$buyamount, $selloffer.unitprice, $selloffer.owner.knownname, $selloffer.owner.sector.knownname]" output="false" append="true" />   
+            <create_trade_order object="this.object" tradeoffer="$selloffer" amount="$buyamount"/>
+          </do_if>
+        </do_if>
+      </do_if>
+
+      <debug_to_file name="$logfile" directory="'TDM'" text="'------------------------------------------------'" output="false" append="true" />
+      <resume label="find trade run"/>
+
+    </actions>
+  </attention>
+</aiscript>
