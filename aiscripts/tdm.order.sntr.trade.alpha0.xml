@@ -159,7 +159,7 @@
       <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['enabled vendors', $numVendors]" output="false" append="true" />
       <do_all exact="$vendors.count" counter="$i">
         <do_if value="$vendors.{$i} != null">
-          <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 %2: %3 (%4)'.['vendor', $i, $customers.{$i}.knownname, $customers.{$i}.sector.knownname]" output="false" append="true" />  
+          <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 %2: %3 (%4)'.['vendor', $i, $vendors.{$i}.knownname, $vendors.{$i}.sector.knownname]" output="false" append="true" />  
         </do_if>
       </do_all>
       <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['enabled customers', $numCustomers]" output="false" append="true" />
@@ -211,7 +211,8 @@
             <price min="$minsellprice"/>
           </find_buy_offer>
           <do_all exact="$buyoffers.count" counter="$j">
-            <set_value name="$profit" exact="$buyoffers.{$j}.unitprice * [$buyoffers.{$j}.amount, this.ship.cargo.{$ware}.count, $maxamount].min"/>
+            <!-- <set_value name="$profit" exact="$buyoffers.{$j}.unitprice * [$buyoffers.{$j}.amount, this.ship.cargo.{$ware}.count, $maxamount].min"/> -->
+            <set_value name="$profit" exact="$buyoffers.{$j}.unitprice * [$buyoffers.{$j}.amount, this.ship.cargo.{$ware}.count].min"/>
             <do_if value="$profit gt $maxprofit">
               <set_value name="$maxprofit" exact="$profit"/>
               <set_value name="$buyoffer" exact="$buyoffers.{$j}"/>
