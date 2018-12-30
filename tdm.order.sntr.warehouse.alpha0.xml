@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<aiscript name="tdm.order.sntr.warehouse.alpha0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="aiscripts.xsd" version="0">
+  <order id="TDM_Order_SnTR_Warehouse" name="SnTR Warehouse Supervisor (Experimental)" description="Used to add tradewares to player stations." category="trade" infinite="true">
+    <params>
+      <param name="warehouse" required="true" default="null" type="object" text="Warehouse" comment="Warehouse. Object">
+        <input_param name="class" value="[class.station]"/>
+        <input_param name="owner" value="this.ship.owner"/>
+      </param>
+      <param name="ware" required="true" type="ware" text="Create buy/sell offer for" comment="Ware to trade. What do we want to trade?">
+        <input_param name="cancarry" value="$warehouse.station"/>
+        <!-- <input_param name="cancarry" value="this.ship"/> -->
+      </param>
+      <param name="buy" required="false" default="true" type="bool" advanced="false" text="Buy" comment="..." />
+      <param name="sell" required="false" default="true" type="bool" advanced="false" text="Sell" comment="..." />
+      <param name="lockavgprice" required="false" default="false" type="bool" advanced="false" text="Lock average price" comment="..." />
+      <param name="remove" required="false" default="false" type="bool" advanced="false" text="remove" comment="..." />
+      <!--
+      <param name="maxamount" required="false" default="this.ship.cargo.capacity.all" type="number" advanced="false" text="{1041, 10051}" comment="Max amount.">
+        <input_param name="startvalue" value="this.ship.cargo.{$ware}.max"/>
+        <input_param name="min" value="0"/>
+        <input_param name="max" value="this.ship.cargo.{$ware}.max"/>
+        <input_param name="step" value="1"/>
+      </param>
+      <param name="minamount" required="false" default="this.ship.cargo.{$ware}.max / 10" type="number" advanced="false" text="{1041, 10065}" comment="Min amount.">
+        <input_param name="startvalue" value="this.ship.cargo.{$ware}.max / 10"/>
+        <input_param name="min" value="1"/>
+        <input_param name="max" value="this.ship.cargo.{$ware}.max"/> 
+        <input_param name="step" value="1"/>
+      </param>
+      <param name="maxbuyprice" required="false" default="($ware.averageprice / 1Cr)Cr" type="money" text="Max buy price" comment="Min/Max price. At which price is a trade acceptable?">
+        <input_param name="startvalue" value="($ware.averageprice / 1Cr)Cr"/>
+        <input_param name="min" value="($ware.minprice / 1Cr)Cr"/>
+        <input_param name="max" value="($ware.maxprice / 1Cr)Cr"/>
+        <input_param name="step" value="1Cr"/>
+      </param>
+      <param name="minsellprice" required="false" default="($ware.averageprice / 1Cr)Cr" type="money" text="Min sell price" comment="Min/Max price. At which price is a trade acceptable?">
+        <input_param name="startvalue" value="($ware.averageprice / 1Cr)Cr"/>
+        <input_param name="min" value="($ware.minprice / 1Cr)Cr"/>
+        <input_param name="max" value="($ware.maxprice / 1Cr)Cr"/>
+        <input_param name="step" value="1Cr"/>
+      </param>
+      <param name="numVendors" required="false" type="number" default="0" text="Enable Vendors" comment="Number of vendors the trader buys from.">
+        <input_param name="startvalue" value="1 + ( 2 * @this.ship.pilot.skill.management + @this.ship.pilot.skill.morale ) / 5"/>
+        <input_param name="min" value="0"/>
+        <input_param name="max" value="1 + ( 2 * @this.ship.pilot.skill.management + @this.ship.pilot.skill.morale ) / 5"/>
+        <input_param name="step" value="1"/>
+      </param>
+      -->
+      <!--
+      <param name="vendor1" required="false" default="null" type="object" text="Vendor 1" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      
+      <param name="vendor2" required="false" default="null" type="object" text="Vendor 2" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor3" required="false" default="null" type="object" text="Vendor 3" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor4" required="false" default="null" type="object" text="Vendor 4" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor5" required="false" default="null" type="object" text="Vendor 5" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor6" required="false" default="null" type="object" text="Vendor 6" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor7" required="false" default="null" type="object" text="Vendor 7" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor8" required="false" default="null" type="object" text="Vendor 8" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor9" required="false" default="null" type="object" text="Vendor 9" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="vendor10" required="false" default="null" type="object" text="Vendor 10" comment="Vendor. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="numCustomers" required="false" type="number" default="0" text="Enable customers" comment="Number of customers the trader buys from.">
+        <input_param name="startvalue" value="1 + ( 2 * @this.ship.pilot.skill.management + @this.ship.pilot.skill.piloting ) / 5"/>
+        <input_param name="min" value="0"/>
+        <input_param name="max" value="1 + ( 2 * @this.ship.pilot.skill.management + @this.ship.pilot.skill.piloting ) / 5"/>
+        <input_param name="step" value="1"/>
+      </param>
+      <param name="customer1" required="false" default="null" type="object" text="Customer 1" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="customer2" required="false" default="null" type="object" text="Customer 2" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="customer3" required="false" default="null" type="object" text="Customer 3" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="customer4" required="false" default="null" type="object" text="Customer 4" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="customer5" required="false" default="null" type="object" text="Customer 5" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="customer6" required="false" default="null" type="object" text="Customer 6" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="customer7" required="false" default="null" type="object" text="Customer 7" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="customer8" required="false" default="null" type="object" text="Customer 8" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="customer9" required="false" default="null" type="object" text="Customer 9" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      <param name="customer10" required="false" default="null" type="object" text="Customer 10" comment="Customer. Object">
+        <input_param name="class" value="[class.station]"/>
+      </param>
+      -->
+      
+    </params>
+    <skill min="10"/>
+    <requires>
+      <match shiptype="shiptype.lasertower" negate="true"/>
+    </requires>
+  </order>
+  <interrupts>
+    <handler ref="SectorChangeHandler"/>
+    <handler ref="AttackHandler" />
+    <handler ref="MissileLockHandler" />
+    <handler ref="ScannedHandler" />
+    <handler ref="InspectedHandler"/>
+    <handler ref="FoundAbandonedHandler"/>
+    <handler ref="ResupplyHandler" />
+    <handler ref="JobRemoveRequestHandler" />
+    <handler ref="TargetInvalidHandler"/>
+  </interrupts>
+  <init>
+    <set_order_syncpoint_reached order="this.ship.order"/>
+    <do_if value="this.ship.commander">
+      <set_command command="command.trade" param="this.ship.commander" />
+    </do_if>
+    <do_else>
+      <set_command command="command.freetrade" />
+    </do_else>
+
+    <do_if value="this.assignedcontrolled.hasownaccount and not this.assignedcontrolled.tradeorders.count">
+      <remove_object_account object="this.assignedcontrolled" transfer="true"/>
+    </do_if>
+
+    <!-- Main action for waiting times -->
+    <set_command_action commandaction="commandaction.searchingtrades" />
+  </init>
+  <attention min="unknown">
+    <actions>
+
+      <!-- set up initial state for trade runs -->
+      <label name="start" />
+
+      <set_value name="$logfile" exact="player.systemtime.{'%Y-%m-%d_%H'} + '_SnTR_Warehouse_' + this.ship.idcode"/>
+
+      
+
+      <!-- Idle for a while -->
+
+      <do_if value="(not $remove) and ( not $warehouse.tradewares.{$ware}.exists )">
+        <add_tradeware object="$warehouse" ware="$ware" allowbuy="$buy" allowsell="$sell" lockavgprice="$lockavgprice"/>
+      </do_if>
+      <do_elseif value="$remove and $warehouse.tradewares.{$ware}.exists">
+        <remove_tradeware object="$warehouse" ware="$ware" />
+      </do_elseif>
+      
+      
+
+      <!-- loop -->
+      <label name="find trade run"/>
+
+      <!-- Idle for a while -->
+
+      <!-- Initializate the results -->
+
+      <!-- Idle for a while -->
+      <set_value name="$maxidletime" exact="(70 - 4 * this.ship.pilot.skill.morale)s"/>
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['max idletime', $maxidletime]" output="false" append="true" /> 
+      <run_script name="'move.idle'" >
+        <param name="Min" value="5s" />
+        <param name="Max" value="$maxidletime" />
+      </run_script>
+      
+      <!-- <create_order object="this.object" id="'DockAt'" immediate="true" default="true"> -->
+      <create_order object="this.object" id="'DockAt'" immediate="false" default="true">
+        <param name="destination" value="$warehouse"/>
+      </create_order>
+
+    </actions>
+  </attention>
+</aiscript>
