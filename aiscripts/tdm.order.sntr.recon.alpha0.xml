@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<aiscript name="tdm.order.sntr.recon.alpha0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="aiscripts.xsd" version="0">
+  <order id="TDM_Order_SnTR_Recon" name="SnTR Recon (Alpha 0)" description="{1041, 162}" category="navigation" infinite="true">
+    <params>
+      <param name="maxdistance" required="false" type="length" default="10km" text="max explore distance to stations" comment="...">
+        <input_param name="startvalue" value="(10 + ( 10 * @this.ship.pilot.skill.morale ))km"/>
+        <input_param name="min" value="10km"/>
+        <input_param name="max" value="(10 + ( 10 * @this.ship.pilot.skill.morale ))km"/>
+        <input_param name="step" value="1km"/>
+      </param>
+      <param name="numSectors" required="false" type="number" default="0" text="Enable Sectors" comment="Number of sectors the scout updates.">
+        <input_param name="startvalue" value="1 + ( 3 * @this.ship.pilot.skill.piloting) / 5"/>
+        <input_param name="min" value="0"/>
+        <input_param name="max" value="1 + ( 3 * @this.ship.pilot.skill.piloting) / 5"/>
+        <input_param name="step" value="1"/>
+      </param>
+      <param name="sector1" required="false" default="null" type="object" text="Sector 1" comment="Sector. Object">
+        <input_param name="class" value="[class.sector]"/>
+      </param>
+      <param name="sector2" required="false" default="null" type="object" text="Sector 2" comment="Sector. Object">
+        <input_param name="class" value="[class.sector]"/>
+      </param>
+      <param name="sector3" required="false" default="null" type="object" text="Sector 3" comment="Sector. Object">
+        <input_param name="class" value="[class.sector]"/>
+      </param>
+      <param name="sector4" required="false" default="null" type="object" text="Sector 4" comment="Sector. Object">
+        <input_param name="class" value="[class.sector]"/>
+      </param>
+      <param name="sector5" required="false" default="null" type="object" text="Sector 5" comment="Sector. Object">
+        <input_param name="class" value="[class.sector]"/>
+      </param>
+      <param name="sector6" required="false" default="null" type="object" text="Sector 6" comment="Sector. Object">
+        <input_param name="class" value="[class.sector]"/>
+      </param>
+      <param name="sector7" required="false" default="null" type="object" text="Sector 7" comment="Sector. Object">
+        <input_param name="class" value="[class.sector]"/>
+      </param>
+      <param name="sector8" required="false" default="null" type="object" text="Sector 8" comment="Sector. Object">
+        <input_param name="class" value="[class.sector]"/>
+      </param>
+      <param name="sector9" required="false" default="null" type="object" text="Sector 9" comment="Sector. Object">
+        <input_param name="class" value="[class.sector]"/>
+      </param>
+      <param name="sector10" required="false" default="null" type="object" text="Sector 10" comment="Sector. Object">
+        <input_param name="class" value="[class.sector]"/>
+      </param>
+    </params>
+    <skill min="0"/>
+    <requires>
+      <match shiptype="shiptype.lasertower" negate="true"/>
+    </requires>
+  </order>
+  <interrupts>
+    <!-- <handler ref="SectorChangeHandler"/> -->
+    <handler ref="AttackHandler" />
+    <handler ref="MissileLockHandler" />
+    <handler ref="ScannedHandler" />
+    <handler ref="InspectedHandler"/>
+    <handler ref="FoundAbandonedHandler"/>
+    <handler ref="ResupplyHandler" />
+    <handler ref="JobRemoveRequestHandler" />
+    <handler ref="TargetInvalidHandler"/>
+  </interrupts>
+  <init>
+    <set_order_syncpoint_reached order="this.ship.order"/>
+    <!-- TODO: set better command -->
+    <do_if value="this.ship.commander">
+      <set_command command="command.recon" param="this.ship.commander" />
+    </do_if>
+    <do_else>
+      <set_command command="command.recon" />
+    </do_else>
+
+    <do_if value="this.assignedcontrolled.hasownaccount and not this.assignedcontrolled.tradeorders.count">
+      <remove_object_account object="this.assignedcontrolled" transfer="true"/>
+    </do_if>
+
+    <!-- Main action for waiting times -->
+    <set_command_action commandaction="commandaction.calculating" />
+  </init>
+  <attention min="unknown">
+    <actions>
+
+      <!-- set up initial state for trade runs -->
+      <label name="start" />
+
+      <set_value name="$logfile" exact="player.systemtime.{'%Y-%m-%d_%H'} + '_SnTR_Recon_' + this.ship.idcode"/>
+      
+      <set_value name="$sectors" exact="[$sector1, $sector2, $sector3, $sector4, $sector5, $sector6, $sector7, $sector8, $sector9, $sector10]"/>
+      <resize_list list="$sectors" count="$numSectors"/>
+
+      <debug_to_file name="$logfile" directory="'TDM'" text="'------------------------------------------------'" output="false" append="true" />
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2 (%3)'.['ship name', this.ship.knownname, this.ship.idcode]" output="false" append="true" />  
+      <!--
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2 (%3)'.['has own account', this.assignedcontrolled.hasownaccount, this.assignedcontrolled.money]" output="false" append="true" />  
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['ware', $ware.name]" output="false" append="true" /> 
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['min amount', $minamount]" output="false" append="true" />    
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['max amount', $maxamount]" output="false" append="true" />
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['max buy price', $maxbuyprice]" output="false" append="true" />    
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['min sell price', $minsellprice]" output="false" append="true" />
+      -->
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['max distance', $maxdistance]" output="false" append="true" />
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['enabled sectors', $numSectors]" output="false" append="true" />
+      <do_all exact="$sectors.count" counter="$i">
+        <do_if value="$sectors.{$i} != null">
+          <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 %2: %3'.['sector', $i, $sectors.{$i}.knownname]" output="false" append="true" />  
+        </do_if>
+      </do_all>
+
+      <!-- Idle for a while -->
+      <set_value name="$maxidletime" exact="(70 - 4 * this.ship.pilot.skill.morale)s"/>
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': %1 : %2'.['max idletime', $maxidletime]" output="false" append="true" /> 
+      <run_script name="'move.idle'" >
+        <param name="Min" value="5s" />
+        <param name="Max" value="$maxidletime" />
+      </run_script>
+      
+
+      <!-- loop -->
+      <label name="find recon run"/>
+
+      <set_command_action commandaction="commandaction.calculating" />
+
+      <!-- Idle for a while -->
+      <run_script name="'move.idle'" >
+        <param name="Min" value="5s" />
+        <param name="Max" value="$maxidletime" />
+      </run_script>
+
+      <!-- Initializate the results -->
+      <!--
+      <set_value name="$buyoffer" exact="null" />
+      <set_value name="$selloffer" exact="null" />
+      <set_value name="$wares" exact="[$ware]"/>
+      -->
+
+      <debug_to_file name="$logfile" directory="'TDM'" text="'------------------------------------------------'" output="false" append="true" />
+      <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': currently in sector %1'.[this.ship.sector.knownname]" output="false" append="true" />  
+
+      <!-- find the sector with the highest count of outdated stations -->
+      <!-- have not yet figured out how to get "time until information expires" -->
+      <set_value name="$maxTargets" exact="0"/>
+      <set_value name="$targetSector" exact="null"/>
+      <set_value name="$targetStations" exact="[]"/>
+      <do_all exact="$sectors.count" counter="$i">
+        <wait min="50ms" max="100ms" comment="Avoid performance peaks with find functions"/>
+        <find_station name="$stations" space="$sectors.{$i}" checkoperational="true" knownto="this.owner" multiple="true"/>
+        <set_value name="$numTargets" exact="0"/>
+        <do_all exact="$stations.count" counter="$j">
+          <do_if value="( not $stations.{$j}.hastradesubscription ) and $stations.{$j}.dockingallowed.{this.ship}">
+            <set_value name="$numTargets" exact="$numTargets + 1"/>
+          </do_if>
+        </do_all>
+        <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': checking %1 : %2 / %3 outdated stations'.[$sectors.{$i}.knownname, $numTargets, $stations.count]" output="false" append="true" />  
+        <do_if value="$numTargets gt $maxTargets">
+          <set_value name="$maxTargets" exact="$numTargets"/>
+          <set_value name="$targetSector" exact="$sectors.{$i}"/>
+          <!-- set_value name="$targetStations" exact="$stations"/> -->
+        </do_if>
+      </do_all>
+
+      <do_if value="$maxTargets gt 0">
+        <do_if value="this.sector != $targetSector">
+          <set_command_action commandaction="commandaction.investigating" param="$targetSector"/>
+          <run_script name="'move.generic'">
+            <param name="destination" value="$targetSector"/>
+            <!-- <param name="position" value="$destination.{2}"/> -->
+          </run_script>
+        </do_if>
+        <wait min="50ms" max="100ms" comment="Avoid performance peaks with find functions"/>
+        <find_station name="$targetStations" space="$targetSector" checkoperational="true" knownto="this.owner" multiple="true"/>
+        <shuffle_list list="$targetStations"/>
+        <do_all exact="$targetStations.count" counter="$i">
+          <do_if value="( not $targetStations.{$i}.hastradesubscription ) and $targetStations.{$i}.dockingallowed.{this.ship}">
+            <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': investigating %1 ( %2 )'.[$targetStations.{$i}.knownname, $targetStations.{$i}.sector.knownname]" output="false" append="true" />  
+            <set_command_action commandaction="commandaction.investigating" param="$targetStations.{$i}"/>
+            <run_script name="'move.generic'">
+              <param name="destination" value="$targetStations.{$i}"/>
+              <!-- <param name="position" value="$destination.{2}"/> -->
+            </run_script>
+          </do_if>
+        </do_all>
+      </do_if>
+      <do_elseif value="$sectors.count gt 0">
+        <set_value name="$i" min="1" max="$sectors.count" />
+        <set_value name="$targetSector" exact="$sectors.{$i}" />
+        <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': exploring %1'.[$targetSector.knownname]" output="false" append="true" />  
+        <do_if value="this.sector != $targetSector">
+          <set_command_action commandaction="commandaction.investigating" param="$targetSector"/>
+          <run_script name="'move.generic'">
+            <param name="destination" value="$targetSector"/>
+            <!-- <param name="position" value="$destination.{2}"/> -->
+          </run_script>
+        </do_if>
+        <wait min="50ms" max="100ms" comment="Avoid performance peaks with find functions"/>
+        <find_station name="$targetStations" space="$targetSector" checkoperational="true" knownto="this.owner" multiple="true"/>
+        <shuffle_list list="$targetStations"/>
+        <do_all exact="$targetStations.count" counter="$i">
+          <do_if value="$targetStations.{$i}.dockingallowed.{this.ship}">
+            <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': exploring near %1 ( %2 )'.[$targetStations.{$i}.knownname, $targetStations.{$i}.sector.knownname]" output="false" append="true" />  
+            <set_command_action commandaction="commandaction.investigating" param="$targetStations.{$i}"/>
+            <set_value name="$position" exact="null" />
+            <get_safe_pos result="$position" sector="$targetSector" object="$targetStations.{$i}" radius="this.ship.size * 2" max="$maxdistance" ignored="this.ship"/>
+            <run_script name="'move.nohighway'">
+              <param name="target" value="$targetSector"/>
+              <param name="position" value="$position"/>
+
+              <!-- <param name="position" value="$destination.{2}"/> -->
+            </run_script>
+          </do_if>
+        </do_all>
+      </do_elseif>
+      
+
+      <debug_to_file name="$logfile" directory="'TDM'" text="'------------------------------------------------'" output="false" append="true" />
+      <resume label="find recon run"/>
+
+    </actions>
+  </attention>
+</aiscript>
