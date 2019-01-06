@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<aiscript name="tdm.order.sntr.recon.alpha0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="aiscripts.xsd" version="0">
-  <order id="TDM_Order_SnTR_Recon" name="SnTR Recon (Alpha 0)" description="{1041, 162}" category="navigation" infinite="true">
+<aiscript name="tdm.order.sntr.recon.beta1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="aiscripts.xsd" version="0">
+  <order id="TDM_Order_SnTR_Recon_Beta1" name="SnTR Recon (Beta 1)" description="{1041, 162}" category="navigation" infinite="true">
     <params>
-      <param name="maxdistance" required="false" type="length" default="10km" text="max explore distance to stations" comment="...">
+      <param name="maxdistance" required="false" type="length" default="10km" text="explore distance" comment="...">
         <input_param name="startvalue" value="(10 + ( 10 * @this.ship.pilot.skill.morale ))km"/>
         <input_param name="min" value="10km"/>
         <input_param name="max" value="(10 + ( 10 * @this.ship.pilot.skill.morale ))km"/>
@@ -179,36 +179,64 @@
               <!-- <param name="position" value="$destination.{2}"/> -->
             </run_script>
           </do_if>
+          <do_if value="( not $targetStations.{$i}.hastradesubscription ) and $targetStations.{$i}.dockingallowed.{this.ship}">
+            <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': failed to update, maybe move idle helps: %1 ( %2 )'.[$targetStations.{$i}.knownname, $targetStations.{$i}.sector.knownname]" output="false" append="true" />  
+            <set_command_action commandaction="commandaction.investigating" param="$targetStations.{$i}"/>
+            <run_script name="'move.idle'" >
+              <param name="Min" value="$maxidletime" />
+              <param name="Max" value="2 * $maxidletime" />
+            </run_script>
+          </do_if>
+          <!--
+          <do_if value="( not $targetStations.{$i}.hastradesubscription ) and $targetStations.{$i}.dockingallowed.{this.ship}">
+            <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': failed to update again, maybe docking helps: %1 ( %2 )'.[$targetStations.{$i}.knownname, $targetStations.{$i}.sector.knownname]" output="false" append="true" />  
+            <set_command_action commandaction="commandaction.investigating" param="$targetStations.{$i}"/>
+            <create_order object="this.ship" id="'DockAndWait'" immediate="true">
+              <param name="destination" value="$targetStations.{$i}"/>
+              <param name="timeout" value="$maxidletime"/>
+            </create_order>
+          </do_if>
+          -->
+          <do_if value="( not $targetStations.{$i}.hastradesubscription ) and $targetStations.{$i}.dockingallowed.{this.ship}">
+            <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': failed to update again, cheating it: %1 ( %2 )'.[$targetStations.{$i}.knownname, $targetStations.{$i}.sector.knownname]" output="false" append="true" />  
+            <add_trade_subscription object="targetStations.{$i}" duration="18000s"/>
+          </do_if>
         </do_all>
       </do_if>
       <do_elseif value="$sectors.count gt 0">
         <set_value name="$i" min="1" max="$sectors.count" />
         <set_value name="$targetSector" exact="$sectors.{$i}" />
-        <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': exploring %1'.[$targetSector.knownname]" output="false" append="true" />  
-        <do_if value="this.sector != $targetSector">
-          <set_command_action commandaction="commandaction.investigating" param="$targetSector"/>
-          <run_script name="'move.generic'">
-            <param name="destination" value="$targetSector"/>
-            <!-- <param name="position" value="$destination.{2}"/> -->
-          </run_script>
-        </do_if>
-        <wait min="50ms" max="100ms" comment="Avoid performance peaks with find functions"/>
-        <find_station name="$targetStations" space="$targetSector" checkoperational="true" knownto="this.owner" multiple="true"/>
-        <shuffle_list list="$targetStations"/>
-        <do_all exact="$targetStations.count" counter="$i">
-          <do_if value="$targetStations.{$i}.dockingallowed.{this.ship}">
-            <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': exploring near %1 ( %2 )'.[$targetStations.{$i}.knownname, $targetStations.{$i}.sector.knownname]" output="false" append="true" />  
-            <set_command_action commandaction="commandaction.investigating" param="$targetStations.{$i}"/>
-            <set_value name="$position" exact="null" />
-            <get_safe_pos result="$position" sector="$targetSector" object="$targetStations.{$i}" radius="this.ship.size * 2" max="$maxdistance" ignored="this.ship"/>
-            <run_script name="'move.nohighway'">
-              <param name="target" value="$targetSector"/>
-              <param name="position" value="$position"/>
-
+        <!-- don't pick the sector we are currently in unless there is just one-->
+        <do_if value="($sectors.count gt 1) and (this.sector != $targetSector)">
+          <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': exploring %1'.[$targetSector.knownname]" output="false" append="true" />  
+          <do_if value="this.sector != $targetSector">
+            <set_command_action commandaction="commandaction.investigating" param="$targetSector"/>
+            <run_script name="'move.generic'">
+              <param name="destination" value="$targetSector"/>
               <!-- <param name="position" value="$destination.{2}"/> -->
             </run_script>
           </do_if>
-        </do_all>
+          <wait min="50ms" max="100ms" comment="Avoid performance peaks with find functions"/>
+          <find_station name="$targetStations" space="$targetSector" checkoperational="true" knownto="this.owner" multiple="true"/>
+          <shuffle_list list="$targetStations"/>
+          <do_all exact="$targetStations.count" counter="$i">
+            <do_if value="$targetStations.{$i}.dockingallowed.{this.ship}">
+              <debug_to_file name="$logfile" directory="'TDM'" text="player.age/1h + ': exploring near %1 ( %2 )'.[$targetStations.{$i}.knownname, $targetStations.{$i}.sector.knownname]" output="false" append="true" />  
+              <set_command_action commandaction="commandaction.investigating" param="$targetStations.{$i}"/>
+              <set_value name="$position" exact="null" />
+              <get_safe_pos result="$position" sector="$targetSector" object="$targetStations.{$i}" radius="this.ship.size * 2" max="$maxdistance" ignored="this.ship"/>
+              <run_script name="'move.nohighway'">
+                <param name="target" value="$targetSector"/>
+                <param name="position" value="$position"/>
+
+                <!-- <param name="position" value="$destination.{2}"/> -->
+              </run_script>
+            </do_if>
+          </do_all>
+          <apply_experience entity="this" experience="'ship_trade_normal'" factor="($targetStations.count)f / 10.0"/>
+          <apply_experience object="this.assignedcontrolled" role="entityrole.service" experience="'ship_trade_normal'" factor="($targetStations.count)f / 15.0"/>
+        </do_if>
+        
       </do_elseif>
       
 
